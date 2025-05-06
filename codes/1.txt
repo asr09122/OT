@@ -1,0 +1,53 @@
+c1 = @(x1,x2,x3,x4) x1 + x2 - 6;
+c2 = @(x1,x2,x3,x4) 2*x2 - x2 - 9;
+C = [-3 2 0 0];
+A = [1 1 1 0; 2 -1 0 1];
+B = [6;9];
+
+m = size(A,1);
+n = size(A,2);
+table = [];
+
+bv_index = n-m+1 : n;
+Y = [A B];
+for s=1:50
+    Xb = Y(:,end);
+    Cb = C(bv_index);
+    ZjCj = Cb*Y(:,1:n)-C;
+    Z = Cb*Xb;
+    table = [table ;ZjCj Z;Y]
+
+    if(ZjCj >= 0)
+        disp("Optimal sol achieved")
+        Xb;
+        basic_var = bv_index;
+        disp("Optimal obj func value")
+        Z
+        break
+
+    else
+        [a,EV] = min(ZjCj);
+        if(Y(:,EV) < 0)
+            disp("Unbounded Solution")
+            break
+        else
+            for j = 1:m
+                if(Y(j,EV) > 0)
+                    ratio(j) = Xb(j) / Y(j,EV);
+                else
+                    ratio(j) = Inf;
+                end
+            end
+        end
+        [k,LV] = min(ratio);
+        bv_index(LV) = EV;
+    end
+
+    pivot = Y(LV,EV);
+    Y(LV,:) = Y(LV,:) / pivot;
+    for i = 1:m
+        if(i ~= LV)
+            Y(i,:) = Y(i,:) - Y(i,EV)*Y(LV,:);
+        end
+    end
+end

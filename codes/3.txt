@@ -1,0 +1,45 @@
+cost = [11 13 17 14; 16 18 14 10; 21 24 13 10];
+supply = [8 5 9];
+demand = [8 7 5 4];
+[m,n] = size(cost);
+if(sum(supply) == sum(demand))
+    disp("Balanced Problem")
+else if sum(supply) < sum(demand)
+        cost(end+1,:) = zeros(1,n);
+        supply(end+1) = sum(demand)-sum(supply);
+else
+    cost(:,end+1) = zeros(m,1);
+    demand(end+1) = sum(supply)-sum(demand);
+end
+end
+
+matrix = [cost,supply';demand,24];
+cost_initial = cost;
+
+X = zeros(n,m);
+while(any(supply)~=0 || any(demand)~=0)
+    min_cost = min(cost(:));
+    [r,c] = find(cost == min_cost);
+    y = min(supply(r), demand(c));
+    [aloc,index] = max(y);
+    rr = r(index);
+    cc = c(index);
+    X(rr,cc) = aloc;
+    supply(rr) = supply(rr) - aloc;
+    demand(cc) = demand(cc) - aloc;
+    cost(rr,cc) = inf;
+end
+X
+
+% calculating total cost
+
+cost_cell = cost_initial.*X;
+Final_cost = sum(cost_cell(:))
+% if all (m+n-1) are > 0, then degenerate, otherwise non degenerate
+%nnz = command to get number of nonzero values
+if(nnz(X) == m+n-1)
+    disp("Non Degenerate soln")
+else
+    disp("Degenerate soln")
+end
+% simplex, Big M, dual simplex, lcm, steepest descent method

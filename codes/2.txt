@@ -1,0 +1,47 @@
+C = [-2 -1 0 0 0];
+A = [-3 -1 1 0 0 ; -4 -3 0 1 0; -1 -2 0 0 1 ];
+b = [-3; -6; -3];
+
+m = size(A,1);
+n = size(A,2);
+bv_index = n-m+1:n;
+Y = [A b];
+
+for s=1:50
+    Xb = Y(:,end);
+    Cb = C(bv_index);
+    ZjCj = Cb*Y(:,1:n)-C;
+    Z = Cb*Xb;
+    table = [ZjCj Z;Y]
+    if(Xb >= 0)
+        disp("Feasible soln achieved");
+        Xb
+        basic_var = bv_index;
+        disp("Optimal Obj Value")
+        Z
+        break
+    else
+        [a, LV] = min(Xb);
+        if(Y(LV,1:n) >= 0)
+            disp("No feasible soln")
+            break
+        else
+            for j=1:n
+                if(Y(LV,j) < 0)
+                    ratio(j) = abs(ZjCj(j)/Y(LV,j));
+                else
+                    ratio(j) = inf;
+                end
+            end
+            [k,EV] = min(ratio);
+            bv_index(LV) = EV;
+        end
+        pivot = Y(LV,EV);
+         Y(LV,:) = Y(LV,:) / pivot;
+    for i = 1:m
+        if(i ~= LV)
+            Y(i,:) = Y(i,:) - Y(i,EV)*Y(LV,:);
+        end
+    end
+end
+end

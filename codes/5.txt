@@ -1,0 +1,25 @@
+clc;
+clear all;
+
+f = @(x) x(1)^2 - x(1)*x(2) + x(2)^2;
+
+gradf = @(x) [2*x(1) - x(2); -x(1) + 2*x(2)];
+
+hessf = @(x) [2, -1; -1, 2];
+
+% Initialization
+x0 = [1; 0.5];
+tol = 0.05;
+maxiter = 10;
+iter = 0;
+
+while norm(gradf(x0)) > tol && iter < maxiter
+    s = -gradf(x0);
+    H = hessf(x0);
+    lambda = (s' * s) / (s' * H * s);
+    x0 = x0 + lambda * s;
+    iter = iter + 1;
+end
+
+fprintf("Optimal solution of x = [%f, %f]\n", x0(1), x0(2));
+fprintf("Optimal value of f(x) = %f\n", f(x0));

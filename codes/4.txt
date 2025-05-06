@@ -1,0 +1,44 @@
+C = [-2 -1 0 0 0]; 
+A = [-3 -1 1 0 0;-4 -3 0 1 0; -1 -2 0 0 1]; 
+b = [-3; -6; -3]; 
+m = size(A,1);
+n = size(A,2);
+bv_index = n-m+1:n;
+Y = [A b];
+xb = Y(:,end);
+cb = C(bv_index);
+zicj = cb*Y(:,1:n)-C;
+z = cb*xb;
+
+table = [zicj, z; Y];
+disp('initial table:');
+disp(table);
+while any(xb<0)
+    [~, lv] = min(xb);
+    if all(Y(lv,1:n) >= 0)
+        disp("Unbounded solution");
+        return;
+    end
+    ratio = Inf(1,n);
+    for j = 1:n
+        if Y(lv,j)<0
+            ratio(j) = abs(zicj(j)/Y(lv,j));
+        end
+    end
+    [~, ev] = min(ratio);
+    bv_index(lv) = ev;
+    piv = Y(lv, ev);
+    Y(lv,:)=Y(lv, :)/piv;
+    for i = 1:m
+        if i ~= lv
+            Y(i,:) = Y(i,:)-Y(i,ev)*Y(lv,:);
+        end
+    end
+    xb = Y(:,end);
+    cb = C(bv_index);
+    zicj = cb * Y(:,1:n) - C;
+    z =cb *xb;
+    table = [zicj, z; Y];
+    disp(table);
+end
+disp(z)
