@@ -2,18 +2,20 @@ clc;
 clear;
 
 M = 1e6;
-C = [-3 2 0 0 -M];
-A = [1 1 1 0 1;
-     2 -1 0 1 0];
-b = [6; 9];
+C = [-2 -1 0 0 -M -M];
+A = [3 1 0 0 1 0;
+     4 3 -1 0 0 1;
+     1 2 0 1 0 0];
+b = [3; 6; 3];
 
 [m, n] = size(A);
-bv_index = n - m + 1 : n;
+bv_index = [5 6 4];
+
 Y = [A b];
 xb = Y(:, end);
 cb = C(bv_index);
 
-zicj = cb * Y(:,1:n) - C;
+zicj = cb * Y(:, 1:n) - C;
 z = cb * xb;
 
 table = [zicj, z; Y];
@@ -22,36 +24,29 @@ disp(table);
 
 while any(zicj < 0)
     [~, ev] = min(zicj);
-
     if all(Y(:, ev) <= 0)
         disp("Unbounded solution");
         return;
     end
-
     ratio = Inf(m, 1);
     for j = 1:m
         if Y(j, ev) > 0
             ratio(j) = xb(j) / Y(j, ev);
         end
     end
-
     [~, lv] = min(ratio);
     bv_index(lv) = ev;
-
     pivot = Y(lv, ev);
     Y(lv, :) = Y(lv, :) / pivot;
-
     for i = 1:m
         if i ~= lv
             Y(i,:) = Y(i,:) - Y(i,ev) * Y(lv,:);
         end
     end
-
-    xb = Y(:,end);
+    xb = Y(:, end);
     cb = C(bv_index);
-    zicj = cb * Y(:,1:n) - C;
+    zicj = cb * Y(:, 1:n) - C;
     z = cb * xb;
-
     table = [zicj, z; Y];
     disp('Updated Table:');
     disp(table);
@@ -59,7 +54,6 @@ end
 
 solution = zeros(1, n);
 solution(bv_index) = xb';
-
 disp('Optimal Solution (including artificial if any):');
 disp(solution);
 disp('Final Maximum Z value:');
