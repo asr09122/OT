@@ -1,44 +1,66 @@
-C = [-2 -1 0 0 0]; 
-A = [-3 -1 1 0 0;-4 -3 0 1 0; -1 -2 0 0 1]; 
-b = [-3; -6; -3]; 
-m = size(A,1);
-n = size(A,2);
-bv_index = n-m+1:n;
+clc;
+clear;
+
+M = 1e6;
+C = [-3 2 0 0 -M];
+A = [1 1 1 0 1;
+     2 -1 0 1 0];
+b = [6; 9];
+
+[m, n] = size(A);
+bv_index = n - m + 1 : n;
 Y = [A b];
-xb = Y(:,end);
+xb = Y(:, end);
 cb = C(bv_index);
-zicj = cb*Y(:,1:n)-C;
-z = cb*xb;
+
+zicj = cb * Y(:,1:n) - C;
+z = cb * xb;
 
 table = [zicj, z; Y];
-disp('initial table:');
+disp('Initial Table:');
 disp(table);
-while any(xb<0)
-    [~, lv] = min(xb);
-    if all(Y(lv,1:n) >= 0)
+
+while any(zicj < 0)
+    [~, ev] = min(zicj);
+
+    if all(Y(:, ev) <= 0)
         disp("Unbounded solution");
         return;
     end
-    ratio = Inf(1,n);
-    for j = 1:n
-        if Y(lv,j)<0
-            ratio(j) = abs(zicj(j)/Y(lv,j));
+
+    ratio = Inf(m, 1);
+    for j = 1:m
+        if Y(j, ev) > 0
+            ratio(j) = xb(j) / Y(j, ev);
         end
     end
-    [~, ev] = min(ratio);
+
+    [~, lv] = min(ratio);
     bv_index(lv) = ev;
-    piv = Y(lv, ev);
-    Y(lv,:)=Y(lv, :)/piv;
+
+    pivot = Y(lv, ev);
+    Y(lv, :) = Y(lv, :) / pivot;
+
     for i = 1:m
         if i ~= lv
-            Y(i,:) = Y(i,:)-Y(i,ev)*Y(lv,:);
+            Y(i,:) = Y(i,:) - Y(i,ev) * Y(lv,:);
         end
     end
+
     xb = Y(:,end);
     cb = C(bv_index);
     zicj = cb * Y(:,1:n) - C;
-    z =cb *xb;
+    z = cb * xb;
+
     table = [zicj, z; Y];
+    disp('Updated Table:');
     disp(table);
 end
-disp(z)
+
+solution = zeros(1, n);
+solution(bv_index) = xb';
+
+disp('Optimal Solution (including artificial if any):');
+disp(solution);
+disp('Final Maximum Z value:');
+disp(z);
